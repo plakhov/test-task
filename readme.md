@@ -13,7 +13,9 @@ Java SE 8, Spring Boot 2.3.0, Freemarker template, PostgreSQL 12.3, Liquibase
 + DB_PORT - порт для соединения
 
 Для создания схемы БД можно запустить сам сервис и при помощи Liquibase сервис сам себе создаст схему, либо воспользоваться файлом data.sql, который кроме схемы содержит в себе тестовые данные
-
+Для запуска БД можно самом развернуть postgres или воспользоваться командой
++ docker run -e POSTGRES_PASSWORD=admin -e POSTGRES_USER=admin -e POSTGRES_DB=test -p 5432:5432 -d postgres
+Она запустит docker контейнер с БД
 
 ###Роли
 В проекте существуют две роли: пользователь и администратор.

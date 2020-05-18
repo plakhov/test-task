@@ -3,7 +3,6 @@ package com.home.test.controller;
 import com.home.test.dto.RequestRecord;
 import com.home.test.dto.UserRecord;
 import com.home.test.entity.Role;
-import com.home.test.exception.ForbiddenException;
 import com.home.test.service.RequestService;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -22,6 +21,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/requests")
@@ -117,12 +117,8 @@ public class RequestController {
                                   @AuthenticationPrincipal UserRecord userRecord,
                                   HttpServletResponse response) {
         Map<String, Object> model = new HashMap<>();
-        requestService.getById(requestId).ifPresent(requestRecord -> {
-            if (userRecord.getRole() == Role.ROLE_USER && !userRecord.getId().equals(Long.toString(requestRecord.getUserId()))) {
-                throw new ForbiddenException();
-            }
-            model.put("request", requestRecord);
-        });
+        requestService.getById(requestId, userRecord)
+                .ifPresent(requestRecord -> model.put("request", requestRecord));
         Template template = null;
         try {
             response.setCharacterEncoding("UTF-8");
@@ -140,13 +136,13 @@ public class RequestController {
                               @AuthenticationPrincipal UserRecord userRecord,
                               HttpServletResponse response) {
         record.setUserId(Long.parseLong(userRecord.getId()));
-        boolean success = false;
+        Optional<RequestRecord> editedRequest;
         if (StringUtils.isEmpty(record.getId())) {
-            success = requestService.create(record);
+            editedRequest = requestService.create(record);
         } else {
-            success = requestService.update(record);
+            editedRequest = requestService.update(record);
         }
-        if (success) {
+        if (editedRequest.isPresent()) {
             try {
                 if (userRecord.getRole() == Role.ROLE_USER) {
                     response.sendRedirect("/requests/my");
@@ -165,12 +161,7 @@ public class RequestController {
     public void deleteRequest(@PathVariable("requestId") long requestId,
                               @AuthenticationPrincipal UserRecord userRecord,
                               HttpServletResponse response) {
-        requestService.getById(requestId).ifPresent(requestRecord -> {
-            if (userRecord.getRole() == Role.ROLE_USER && !userRecord.getId().equals(Long.toString(requestRecord.getUserId()))) {
-                throw new ForbiddenException();
-            }
-        });
-        if (requestService.remove(requestId)) {
+        if (requestService.remove(requestId, userRecord)) {
             try {
                 if (userRecord.getRole() == Role.ROLE_USER) {
                     response.sendRedirect("/requests/my");

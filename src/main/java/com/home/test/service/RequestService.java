@@ -3,7 +3,6 @@ package com.home.test.service;
 import com.home.test.dto.RequestRecord;
 import com.home.test.dto.UserRecord;
 import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,11 +10,11 @@ import java.util.Optional;
 
 public interface RequestService {
 
-    boolean create(RequestRecord record);
+    Optional<RequestRecord> create(RequestRecord record);
 
-    boolean update(RequestRecord record);
+    Optional<RequestRecord> update(RequestRecord record);
 
-    Optional<RequestRecord> getById(long id);
+    Optional<RequestRecord> getById(long id, UserRecord userRecord);
 
     List<RequestRecord> getAll(Pageable pageable);
 
@@ -25,5 +24,5 @@ public interface RequestService {
 
     long countByUserId(long userId);
 
-    boolean remove(long id);
+    boolean remove(long id, UserRecord record);
 }

@@ -33,5 +33,11 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <sql>
+            INSERT INTO public."user"(id, first_name, last_name, role, login, password_hash)
+            VALUES (1, 'admin', 'admin', 'ROLE_ADMIN', 'admin',
+            '$2a$10$OWXEElDAhzsESPf52oj9QuXxuYBUpCC4Jd7c0iID9Nn1n3z.jquay')
+        </sql>
     </changeSet>
 </databaseChangeLog>

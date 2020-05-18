@@ -1,5 +1,7 @@
 package com.home.test.dto;
 
+import java.util.Objects;
+
 public class RequestRecord {
 
     private String id;
@@ -55,5 +57,20 @@ public class RequestRecord {
 
     public void setUserId(long userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RequestRecord that = (RequestRecord) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(name, that.name) &&
+                Objects.equals(description, that.description);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, description);
     }
 }

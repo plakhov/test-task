@@ -4,6 +4,8 @@ import com.home.test.dto.RequestRecord;
 import com.home.test.dto.UserRecord;
 import com.home.test.dto.mapper.RequestMapper;
 import com.home.test.entity.RequestEntity;
+import com.home.test.entity.Role;
+import com.home.test.exception.NotFoundException;
 import com.home.test.repository.RequestRepository;
 import com.home.test.repository.UserRepository;
 import org.slf4j.Logger;
@@ -33,42 +35,53 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     @Transactional
-    public boolean create(RequestRecord record) {
+    public Optional<RequestRecord> create(RequestRecord record) {
+        RequestEntity requestEntity = requestMapper.toEntity(record);
         try {
-            RequestEntity requestEntity = requestMapper.toEntity(record);
             requestEntity.setUser(userRepository.findById(record.getUserId())
                     .orElseThrow(() -> new IllegalStateException("User not found, id=" + record.getUserId())));
-            requestRepository.save(requestEntity);
+            requestEntity = requestRepository.save(requestEntity);
         } catch (Exception e) {
             LOG.error("Got exception while create request", e);
-            return false;
+            return Optional.empty();
         }
-        return true;
+        return Optional.of(requestMapper.toRecord(requestEntity));
     }
 
     @Override
     @Transactional
-    public boolean update(RequestRecord record) {
+    public Optional<RequestRecord> update(RequestRecord record) {
+        RequestEntity oldEntity;
         try {
-            RequestEntity newEntity = requestMapper.toEntity(record);
-            RequestEntity oldEntity = requestRepository.findById(Long.parseLong(record.getId()))
+            oldEntity = requestRepository.findById(Long.parseLong(record.getId()))
                     .orElseThrow(() -> new IllegalStateException("Request not found, id=" + record.getId()));
+            RequestEntity newEntity = requestMapper.toEntity(record);
             oldEntity.setName(newEntity.getName());
             oldEntity.setDescription(newEntity.getDescription());
             requestRepository.save(oldEntity);
         } catch (Exception e) {
             LOG.error("Got exception while update request", e);
-            return false;
+            return Optional.empty();
         }
-        return true;
+        return Optional.of(requestMapper.toRecord(oldEntity));
     }
 
     @Override
-    public Optional<RequestRecord> getById(long id) {
-        return requestRepository.findById(id).map(requestMapper::toRecord);
+    @Transactional
+    public Optional<RequestRecord> getById(long id, UserRecord userRecord) {
+        Optional<RequestEntity> entity = requestRepository.findById(id);
+        entity.ifPresent(requestEntity -> {
+            if (userRecord != null
+                    && userRecord.getRole() == Role.ROLE_USER
+                    && requestEntity.getUser().getId() != Long.parseLong(userRecord.getId())) {
+                throw new NotFoundException();
+            }
+        });
+        return entity.map(requestMapper::toRecord);
     }
 
     @Override
+    @Transactional
     public List<RequestRecord> getAll(Pageable pageable) {
         return requestRepository.findAll(pageable).stream()
                 .map(requestMapper::toRecord)
@@ -76,6 +89,7 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
+    @Transactional
     public List<RequestRecord> getByUser(UserRecord record, Pageable pageable) {
         return requestRepository.findAllByUserId(Long.parseLong(record.getId()), pageable).stream()
                 .map(requestMapper::toRecord)
@@ -93,7 +107,12 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public boolean remove(long id) {
+    public boolean remove(long id, UserRecord userRecord) {
+        requestRepository.findById(id).ifPresent(requestEntity -> {
+            if (userRecord.getRole() == Role.ROLE_USER && requestEntity.getUser().getId() != Long.parseLong(userRecord.getId())) {
+                throw new NotFoundException();
+            }
+        });
         try {
             requestRepository.deleteById(id);
         } catch (Exception e) {
