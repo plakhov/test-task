@@ -1,7 +1,6 @@
 package com.home.test.controller;
 
 
-import com.home.test.dto.RequestRecord;
 import com.home.test.dto.UserRecord;
 import com.home.test.service.UserService;
 import freemarker.template.Configuration;
@@ -12,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
