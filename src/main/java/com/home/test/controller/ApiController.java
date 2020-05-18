@@ -4,8 +4,6 @@ import com.home.test.dto.RequestRecord;
 import com.home.test.dto.UserRecord;
 import com.home.test.exception.NotFoundException;
 import com.home.test.service.RequestService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api")
 public class ApiController {
-    private static final Logger LOG = LoggerFactory.getLogger(ApiController.class);
 
     private final RequestService requestService;
 
